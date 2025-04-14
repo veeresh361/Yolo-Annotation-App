@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 from PIL import Image, ImageDraw
 import cv2
+import os
 from ultralytics import YOLO
 from streamlit_drawable_canvas import st_canvas
 from config import YOLO_MODEL_PATH,ANNOTATED_MASK_PATH
@@ -46,8 +47,8 @@ def main():
         st.session_state.original_resized_image = resize_image(np.array(original_image), 500, 500)
 
         col1, col2 = st.columns(2)
-        col1.image(original_image, caption="Original Image", use_container_width=True)
-        col2.image(st.session_state.annotated_image, caption="Detected Image", use_container_width=True)
+        col1.image(original_image, caption="Original Image")
+        col2.image(st.session_state.annotated_image, caption="Detected Image")
 
     # Annotate logic
     elif annotate_pressed:
@@ -83,23 +84,23 @@ def main():
                 st.session_state.count += 1
 
             col1, col2 = st.columns(2)
-            col1.image(st.session_state.original_resized_image, caption="Original Image", use_container_width=True)
-            col2.image(st.session_state.original_resized, caption="Annotated Image", use_container_width=True)
+            col1.image(st.session_state.original_resized_image, caption="Original Image")
+            col2.image(st.session_state.original_resized, caption="Annotated Image")
 
             if st.button("Show Generated Mask", type="primary"):
                 st.session_state.black_image = draw_points_on_black_image(
                     st.session_state.original_resized, st.session_state.tempList
                 )
                 black_image_pil = Image.fromarray(st.session_state.black_image)
-                col1.image(st.session_state.original_resized, caption="Annotated Image", use_container_width=True)
-                col2.image(black_image_pil, caption="Generated Mask", use_container_width=True)
+                col1.image(st.session_state.original_resized, caption="Annotated Image")
+                col2.image(black_image_pil, caption="Generated Mask")
 
             if st.button("Done", type="primary"):
                 st.session_state.draw_mode = False
                 st.session_state.done_clicked = True
 
             if st.session_state.done_clicked:
-                mask_path = ANNOTATED_MASK_PATH + st.session_state.file_name + '.jpg'
+                mask_path = os.path.join(ANNOTATED_MASK_PATH,st.session_state.file_name)
                 cv2.imwrite(mask_path, st.session_state.black_image)
 
                 for key in [
@@ -110,7 +111,7 @@ def main():
                     st.session_state.pop(key, None)
 
                 st.success("✅ Annotation saved. Upload a new image to start again!")
-                st.rerun()
+                st.experimental_rerun()
 
 if __name__ == "__main__":
     main()

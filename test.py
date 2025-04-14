@@ -1,2 +1,2 @@
-import streamlit as st
-print(st.__version__)
+import ultralytics
+print(ultralytics.__version__)
