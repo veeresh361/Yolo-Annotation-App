@@ -11,10 +11,12 @@ def init_session_state():
         "original_resized_image": None,
         "annotated_image": None,
         "draw_mode": False,
-        "count": 0,
+        "start_button_pressed": None,
         "tempList": {},
         "black_image": None,
         "done_clicked": False,
+        "counter":0,
+        'count':0
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -51,7 +53,7 @@ def init_session_state():
 #     for key, points in point_dict.items():
 #         # Convert list of tuples -> numpy array shape (n_points, 1, 2)
 #         contour = np.array(points, dtype=np.int32).reshape((-1, 1, 2))
-        
+
 #         # Fill polygon with white
 #         cv2.fillPoly(black_img, [contour], color=(255, 255, 255))  # White fill
 

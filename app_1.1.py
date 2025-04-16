@@ -14,7 +14,7 @@ from utils import (init_session_state,resize_image,draw_points_on_black_image,de
 def load_model():
     return YOLO(YOLO_MODEL_PATH)
 
-IMAGElIST=os.listdir(INPUT_IMAGE_PATH)
+IMAGELIST=os.listdir(INPUT_IMAGE_PATH)
 def main():
 
     model = load_model()
@@ -22,25 +22,25 @@ def main():
 
     init_session_state()
 
-    # File uploader
-    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-
-    # UI controls
+    # # File uploader
+    # if st.button("start", type="primary"):
+    #   st.session_state.start_button_pressed=True
     col1, col2, col3 = st.columns(3)
     upload_pressed = col1.button("Show Image")
     detect_pressed = col2.button("Detect")
     annotate_pressed = col3.button("Annotate")
+      #print(upload_pressed)
 
     # Upload logic
-    if upload_pressed and uploaded_file:
-        st.session_state.file_name = uploaded_file.name
-        st.session_state.uploaded_image = Image.open(uploaded_file)
+    if upload_pressed:
+        st.session_state.file_name = os.path.join(INPUT_IMAGE_PATH,IMAGELIST[st.session_state.counter])
+        st.session_state.uploaded_image = Image.open(st.session_state.file_name ).convert('RGB')
         st.image(st.session_state.uploaded_image, caption="Original Image", width=500)
 
-    # Detection logic
+      # Detection logic
     elif detect_pressed:
-        if st.session_state.uploaded_image is None and uploaded_file:
-            st.session_state.uploaded_image = Image.open(uploaded_file)
+        if st.session_state.uploaded_image is None:
+            st.session_state.uploaded_image = Image.open(st.session_state.file_name)
 
         original_image = st.session_state.uploaded_image
         st.session_state.annotated_image = detect_objects(original_image,model)
@@ -50,13 +50,13 @@ def main():
         col1.image(original_image, caption="Original Image")
         col2.image(st.session_state.annotated_image, caption="Detected Image")
 
-    # Annotate logic
+      # Annotate logic
     elif annotate_pressed:
-        if st.session_state.uploaded_image is None and uploaded_file:
-            st.session_state.uploaded_image = Image.open(uploaded_file)
+        if st.session_state.uploaded_image is None:
+            st.session_state.uploaded_image = Image.open(st.session_state.file_name)
         st.session_state.draw_mode = True
 
-    # Drawing mode
+      # Drawing mode
     if st.session_state.draw_mode:
         base_image = resize_image(st.session_state.annotated_image, 500, 500)
 
@@ -100,7 +100,7 @@ def main():
                 st.session_state.done_clicked = True
 
             if st.session_state.done_clicked:
-                mask_path = os.path.join(ANNOTATED_MASK_PATH,st.session_state.file_name)
+                mask_path = os.path.join(ANNOTATED_MASK_PATH,IMAGELIST[st.session_state.counter])
                 cv2.imwrite(mask_path, st.session_state.black_image)
 
                 for key in [
@@ -109,7 +109,7 @@ def main():
                     "draw_mode", "black_image", "done_clicked", "tempList"
                 ]:
                     st.session_state.pop(key, None)
-
+                st.session_state.counter+=1
                 st.success("✅ Annotation saved. Upload a new image to start again!")
                 st.experimental_rerun()
 
